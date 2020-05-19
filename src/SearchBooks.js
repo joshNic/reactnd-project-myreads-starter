@@ -1,6 +1,7 @@
 import React from "react";
 import * as BooksAPI from "./BooksAPI";
 import { Link } from "react-router-dom";
+import NoImage from "./images/no-image.png"
 import "./App.css";
 
 class SearchBook extends React.Component {
@@ -8,18 +9,25 @@ class SearchBook extends React.Component {
     searchResults: [],
     value: "",
   };
-  handleChange = (e) => {
+  handleChange = async (e) => {
+    // e.preventDefault();
     this.setState({ value: e.target.value });
+    if (this.state.value==="") {
+        this.setState({ searchResults: [] });
+      } else{
+        const searchResults = await BooksAPI.search(this.state.value);
+        this.setState({ searchResults: searchResults });
+      }
   };
-  handleSubmit = async (e) => {
-    e.preventDefault();
-    if (this.state.value === "") {
-      this.setState({ searchResults: [] });
-    } else {
-      const searchResults = await BooksAPI.search(this.state.value);
-      this.setState({ searchResults: searchResults });
-    }
-  };
+//   handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (this.state.value === "") {
+//       this.setState({ searchResults: [] });
+//     } else {
+//       const searchResults = await BooksAPI.search(this.state.value);
+//       this.setState({ searchResults: searchResults });
+//     }
+//   };
 
   render() {
     return (
@@ -29,19 +37,19 @@ class SearchBook extends React.Component {
             <button className="close-search">Close</button>
           </Link>
           <div className="search-books-input-wrapper">
-            <form onSubmit={this.handleSubmit}>
+            {/* <form onSubmit={this.handleSubmit}> */}
               <input
                 type="text"
                 value={this.state.value}
                 onChange={this.handleChange}
                 placeholder="Search by title or author"
               />
-            </form>
+            {/* </form> */}
           </div>
         </div>
         <div className="search-books-results">
           <ol className="books-grid">
-            {this.state.searchResults.length > 0
+            {this.state.searchResults.length>0&&this.state.value!==""
               ? this.state.searchResults.map((book) => (
                   <li key={book.id}>
                     <div className="book">
@@ -51,9 +59,9 @@ class SearchBook extends React.Component {
                           style={{
                             width: 128,
                             height: 193,
-                            backgroundImage: `url(${
-                              book.imageLinks["thumbnail"]
-                            })`,
+                            backgroundImage: book.imageLinks?`url(${
+                                book.imageLinks["thumbnail"]
+                              })`:`url(${NoImage})`,
                           }}
                         />
                         <div className="book-shelf-changer">
