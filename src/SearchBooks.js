@@ -8,28 +8,41 @@ class SearchBook extends React.Component {
   state = {
     searchResults: [],
     value: "",
+    error:""
   };
   handleChange = async (e) => {
-    // e.preventDefault();
     this.setState({ value: e.target.value });
+    let specialChars = "<>@!#$%^&*()_+[]{}?:;|'\"\\,./~`-=";
+    for(let i = 0; i < specialChars.length;i++){
+        if(this.state.value.indexOf(specialChars[i]) !== -1){
+            this.setState({ searchResults: [] });
+            this.setState({ error: "Invalid search query try again" });
+            return
+       }else{
+        this.setState({ error: "" })
+       }
+    }
     if (this.state.value==="") {
         this.setState({ searchResults: [] });
       } else{
         const searchResults = await BooksAPI.search(this.state.value);
-        this.setState({ searchResults: searchResults });
-      }
-  };
-//   handleSubmit = async (e) => {
-//     e.preventDefault();
-//     if (this.state.value === "") {
-//       this.setState({ searchResults: [] });
-//     } else {
-//       const searchResults = await BooksAPI.search(this.state.value);
-//       this.setState({ searchResults: searchResults });
-//     }
-//   };
 
+        const newSearchBooks = searchResults.map(book => {
+            book.shelf = "none";
+            this.props.books.forEach(bookOnShelf => {
+              if (book.id === bookOnShelf.id) {
+                book.shelf = bookOnShelf.shelf;
+              }
+            });
+            return book;
+          });
+          this.setState({
+            searchResults: newSearchBooks
+          });
+        }
+  };
   render() {
+      console.log(this.state)
     return (
       <div className="search-books">
         <div className="search-books-bar">
@@ -37,20 +50,19 @@ class SearchBook extends React.Component {
             <button className="close-search">Close</button>
           </Link>
           <div className="search-books-input-wrapper">
-            {/* <form onSubmit={this.handleSubmit}> */}
               <input
                 type="text"
                 value={this.state.value}
                 onChange={this.handleChange}
                 placeholder="Search by title or author"
               />
-            {/* </form> */}
           </div>
         </div>
         <div className="search-books-results">
           <ol className="books-grid">
-            {this.state.searchResults.length>0&&this.state.value!==""
+            {this.state.searchResults.length>0&&this.state.value!=="" &&!this.state.error
               ? this.state.searchResults.map((book) => (
+                
                   <li key={book.id}>
                     <div className="book">
                       <div className="book-top">
@@ -89,7 +101,12 @@ class SearchBook extends React.Component {
                     </div>
                   </li>
                 ))
-              : "No books available"}
+              : 
+              (<div>
+                  {this.state.error.length>0&&(<p>{this.state.error}</p>)}
+                  {this.state.error.length<=0&&(<p>No books available</p>)}
+              </div>)
+              }
           </ol>
         </div>
       </div>
