@@ -16,18 +16,16 @@ class BooksApp extends React.Component {
   };
 
   updateBookShelf = async (book, event) => {
-    const updatedBooks = this.state.books.map((b) => {
-      if (b.id === book.id) {
-        b.shelf = event;
-      }
-      return b;
-    });
-
+    if(event==='none'){
+      this.setState(prevState => ({
+        books:prevState.books.filter(b => b.id !== book.id)}));
+    }else {
+      book.shelf = event;
+      this.setState(prevState => ({
+        books: prevState.books.filter(b => b.id !== book.id).concat(book)
+      }));
+    }
     await BooksAPI.update(book, event);
-
-    this.setState({
-      books: updatedBooks,
-    });
   };
 
   async componentDidMount() {
